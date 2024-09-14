@@ -1,0 +1,98 @@
+#problem 1: Example of set aliasing and tuple in python code
+# Set aliasing
+set1 = {1, 2, 3}
+set2 = set1  # Alias of set1
+
+print("Set 1:", set1)
+print("Set 2:", set2)
+
+set1.add(4)  # Modifying set1
+
+print("Set 1 after modification:", set1)
+print("Set 2 after modification:", set2)  # Set 2 is also modified
+
+# Tuples
+tuple1 = (1, 2, 3)
+tuple2 = (4, 5, 6)
+
+print("Tuple 1:", tuple1)
+print("Tuple 2:", tuple2)
+
+tuple3 = tuple1 + tuple2  # Concatenating tuples
+
+print("Tuple 3:", tuple3)
+
+#problem 2: write a  python code to show difference between extend and append like a.append() and a.extend()
+# Lists
+list1 = [1, 2, 3]
+list2 = [4, 5, 6]
+
+print("List 1:", list1)
+print("List 2:", list2)
+
+list1.append(7)  # Appending a single element to list1
+list2.extend([7, 8, 9])  # Extending list2 with multiple elements
+
+print("List 1 after append:", list1)
+print("List 2 after extend:", list2)
+
+#problem 3: To check if the number is positive, negative or zero without using elif
+if num > 0:
+    print("positive")
+else:
+    if num == 0:
+        print("zero")
+    else:
+        print("negative number")
+
+#problem 4:  Write a program that asks for a student name and prints his/her grade..
+#Hint: use Python Dictionary
+
+# Initialize an empty dictionary to store student names and their grades
+students_grades = {}
+
+# Function to add or update a student's grades
+def add_grades(student_name, grades):
+    if student_name in students_grades:
+        students_grades[student_name].extend(grades)
+        print(f"Grades updated for {student_name}.")
+    else:
+        students_grades[student_name] = grades
+        print(f"Grades added for {student_name}.")
+
+# Function to display grades for a specific student
+def display_grades(student_name):
+    if student_name in students_grades:
+        print(f"Grades for {student_name}: {students_grades[student_name]}")
+    else:
+        print(f"Student {student_name} not found.")
+
+# Main loop to interact with the user
+def main():
+    while True:
+        print("\nMenu:")
+        print("1. Add grades for a student")
+        print("2. Display grades for a student")
+        print("3. Exit")
+
+        choice = input("Enter your choice (1/2/3): ")
+
+        if choice == '1':
+            name = input("Enter the student's name: ")
+            grades_input = input("Enter the student's grades (comma-separated): ")
+            grades = [int(grade.strip()) for grade in grades_input.split(',')]
+            add_grades(name, grades)
+
+        elif choice == '2':
+            name = input("Enter the student's name: ")
+            display_grades(name)
+
+        elif choice == '3':
+            print("Exiting program.")
+            break
+
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
