@@ -18,7 +18,8 @@ def main():
         print("7. Import Contacts from CSV")
         print("8. Merge Two Contacts")
         print("9. Filter Contacts by Date")
-        print("10. Exit")
+        print("10. Batch Delete Contacts")
+        print("11. Exit")
 
         choice = input("Select an option: ").strip()
 
@@ -232,8 +233,38 @@ def main():
             
             if start_date.lower() != "cancel" and end_date.lower() != "cancel":
                 phonebook.filter_contacts_by_date(start_date, end_date)
+        
+        elif choice == '10':  # Batch Delete Contacts
+            print("\n** Type 'cancel' at any time to stop batch deleting contacts and return to the main menu **")
+            
+            search_term = input("Enter search term to filter contacts: ").strip()
+            if search_term.lower() == "cancel":
+                print("Batch delete operation canceled. Returning to the main menu.")
+                continue
 
-        elif choice == '10':  # Exit
+            filtered_contacts = phonebook.find_contact(search_term)
+            
+            if filtered_contacts:
+                print("\nThe following contacts have been found:")
+                for idx, contact in enumerate(filtered_contacts):
+                    print(f"{idx + 1}. {contact}")
+
+                to_delete = input("Enter the numbers of the contacts you wish to delete (comma separated), or 'cancel': ").strip()
+                if to_delete.lower() == "cancel":
+                    print("Batch delete operation canceled. Returning to the main menu.")
+                    continue
+
+                try:
+                    indices = [int(num.strip()) - 1 for num in to_delete.split(",")]
+                    deleted_count = phonebook.batch_delete_contacts(search_term, indices)
+                    print(f"{deleted_count} contacts deleted successfully.")
+                except ValueError:
+                    print("Invalid input. Please enter valid numbers.")
+            else:
+                print("No contacts found matching the search term.")
+
+
+        elif choice == '11':  # Exit
             print("Exiting the phone book.")
             break
 

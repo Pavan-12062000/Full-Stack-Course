@@ -115,10 +115,28 @@ class PhoneBook:
 
     def import_contacts_from_csv(self, csv_file_path):
         """Import contacts from a CSV file."""
+        successful_imports = 0
+        errors = 0
+
         try:
             with open(csv_file_path, mode='r') as file:
                 reader = csv.DictReader(file)
                 for row in reader:
+                    # Check for missing required fields
+                    if not row['First Name']:
+                        print("Skipping contact with missing required fields: First Name")
+                        errors += 1
+                        continue
+                    if not row['Last Name']:
+                        print("Skipping contact with missing required fields: Last Name")
+                        errors += 1
+                        continue
+                    if not row['Phone Numbers']:
+                        print("Skipping contact with missing required fields: Phone Number")
+                        errors += 1
+                        continue
+
+                    # Create and add the contact if all required fields are present
                     contact = Contact(
                         first_name=row['First Name'],
                         last_name=row['Last Name'],
@@ -127,14 +145,21 @@ class PhoneBook:
                         address=row.get('Address')
                     )
                     self.add_contact(contact)
-            logging.info(f"Imported contacts from {csv_file_path}")
-            print(f"Contacts imported successfully from {csv_file_path}")
+                    successful_imports += 1
+
+            # Print results after the import
+            logging.info(f"Imported contacts from {csv_file_path}: {successful_imports} successful, {errors} errors.")
+            print(f"Contacts imported successfully: {successful_imports}")
+            print(f"Contacts skipped due to errors: {errors}")
+
         except FileNotFoundError:
             print(f"File '{csv_file_path}' not found.")
         except KeyError:
             print("CSV file is missing one or more required columns: 'First Name', 'Last Name', 'Phone Numbers'.")
         except Exception as e:
             print(f"An error occurred while importing: {e}")
+
+
 
     def merge_contacts(self, full_name1, full_name2):
         """Merge two contacts by their full names."""
@@ -172,3 +197,19 @@ class PhoneBook:
                 print("\n")  # Blank line between contacts
         else:
             print("No contacts found in the specified date range.")
+
+    def batch_delete_contacts(self, search_term, indices):
+        """Delete multiple contacts based on the provided search term and user indices."""
+        filtered_contacts = self.find_contact(search_term)
+        deleted_count = 0
+        
+        for index in sorted(indices, reverse=True):
+            if 0 <= index < len(filtered_contacts):
+                contact = filtered_contacts[index]
+                self.contacts.remove(contact)
+                deleted_count += 1
+                logging.info(f"Deleted contact: {contact.first_name} {contact.last_name}")
+            else:
+                print(f"Invalid index: {index + 1}. This contact will not be deleted.")
+        
+        return deleted_count
