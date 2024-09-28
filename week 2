@@ -96,3 +96,77 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+#problem 5: Difference between global and local variables
+
+# Global variable
+global_var = 10
+
+def my_function():
+    # Local variable
+    local_var = 20
+    print("Inside the function:")
+    print("Global variable:", global_var)
+    print("Local variable:", local_var)
+
+# Accessing global variable outside the function
+print("Outside the function:")
+print("Global variable:", global_var)
+
+# Accessing local variable outside the function will result in an error
+# print("Local variable:", local_var)
+
+# Calling the function
+my_function()
+
+
+#problem 6:  Write a program that asks for a student name and prints his/her grade using object oriented programming principles.
+#Hint: use Python Dictionary
+class StudentGrades:
+    def __init__(self):
+        self.students_grades = {}
+
+    def add_grades(self, student_name, grades):
+        if student_name in self.students_grades:
+            self.students_grades[student_name].extend(grades)
+            print(f"Grades updated for {student_name}.")
+        else:
+            self.students_grades[student_name] = grades
+            print(f"Grades added for {student_name}.")
+
+    def display_grades(self, student_name):
+        if student_name in self.students_grades:
+            print(f"Grades for {student_name}: {self.students_grades[student_name]}")
+        else:
+            print(f"Student {student_name} not found.")
+
+    def main(self):
+        while True:
+            print("\nMenu:")
+            print("1. Add grades for a student")
+            print("2. Display grades for a student")
+            print("3. Exit")
+
+            choice = input("Enter your choice (1/2/3): ")
+
+            if choice == '1':
+                name = input("Enter the student's name: ")
+                grades_input = input("Enter the student's grades (comma-separated): ")
+                grades = [int(grade.strip()) for grade in grades_input.split(',')]
+                self.add_grades(name, grades)
+
+            elif choice == '2':
+                name = input("Enter the student's name: ")
+                self.display_grades(name)
+
+            elif choice == '3':
+                print("Exiting program.")
+                break
+
+            else:
+                print("Invalid choice. Please try again.")
+
+
+if __name__ == "__main__":
+    student_grades = StudentGrades()
+    student_grades.main()

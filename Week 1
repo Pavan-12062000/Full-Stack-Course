@@ -1,0 +1,68 @@
+import random
+
+Problem 1:
+def count_characters(string):
+    return len(string)
+
+# Example usage
+text = "Pavan Sree Pichuka"
+character_count = count_characters(text)
+print("Number of characters:", character_count)
+
+Problem 2:
+def divide_numbers(a, b):
+    return a / b
+
+# Example usage
+num1 = float(input("Enter the first number: "))
+num2 = float(input("Enter the second number: "))
+
+result = divide_numbers(num1, num2)
+print("Division result:", result)
+
+Problem 3:
+def sum_numbers():
+    total = 0
+    while True:
+        num = input("Enter a number (or 'stop' to exit): ")
+        if num == "stop":
+            break
+        total += float(num)
+    return total
+
+# Example usage
+result = sum_numbers()
+print("Sum:", result)
+
+Problem 4:
+def generate_grades(students):
+    grades = {}
+    for student in students:
+        first_name = student["first_name"]
+        last_name = student["last_name"]
+        grade = generate_grade()
+        grades[first_name + " " + last_name] = grade
+    return grades
+
+def generate_grade():
+    # Generate a random grade between 0 and 100
+    return random.randint(0, 100)
+
+# Example usage
+students = []
+num_students = int(input("Enter the number of students: "))
+for i in range(num_students):
+    first_name = input("Enter the first name of student {}: ".format(i+1))
+    last_name = input("Enter the last name of student {}: ".format(i+1))
+    students.append({"first_name": first_name, "last_name": last_name})
+
+grades = generate_grades(students)
+
+while True:
+    name = input("Enter a student's name (or 'stop' to exit): ")
+    if name == "stop":
+        break
+    if name in grades:
+        print("Grade for {}: {}".format(name, grades[name]))
+    else:
+        print("No grade found for {}".format(name))
