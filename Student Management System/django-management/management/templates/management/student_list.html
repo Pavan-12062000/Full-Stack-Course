@@ -1,43 +1,50 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Student List</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container student-list mt-5">
+    <h1 class="text-center mb-4">Student List</h1>
+
+    <ul class="list-group">
+        {% for student in students %}
+            <li class="list-group-item student-item d-flex justify-content-between align-items-center">
+                <a href="{% url 'student_detail' student.pk %}" class="student-link">{{ student.first_name }} {{ student.last_name }}</a>
+                <span class="badge badge-secondary">Enrolled: {{ student.enrollment_date }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<style>
+    .student-list {
+        animation: fadeIn 1s ease-in-out;
+    }
+
+    .student-item {
+        transition: transform 0.3s, background-color 0.3s;
+    }
+
+    .student-item:hover {
+        transform: scale(1.02);
+        background-color: #f8f9fa;
+    }
+
+    .student-link {
+        text-decoration: none;
+        color: #007bff;
+        transition: color 0.3s;
+    }
+
+    .student-link:hover {
+        color: #0056b3;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
         }
-        .student-list {
-            margin-top: 50px;
+        to {
+            opacity: 1;
         }
-        .student-item {
-            transition: transform 0.2s;
-        }
-        .student-item:hover {
-            transform: scale(1.05);
-        }
-        .add-student-btn {
-            margin-bottom: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container student-list">
-        <h1 class="text-center">Student List</h1>
-        <div class="text-center">
-            <a href="{% url 'student_create' %}" class="btn btn-primary add-student-btn">Add New Student</a>
-        </div>
-        <ul class="list-group">
-            {% for student in students %}
-                <li class="list-group-item student-item">
-                    <a href="{% url 'student_detail' student.pk %}">{{ student.first_name }} {{ student.last_name }}</a>
-                    <span class="badge badge-secondary float-right">Enrolled: {{ student.enrollment_date }}</span>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+    }
+</style>
+{% endblock %}
