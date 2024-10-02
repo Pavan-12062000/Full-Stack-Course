@@ -8,13 +8,17 @@ class StudentForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if Student.objects.filter(email=email).exists():
+        student_id = self.instance.pk  # Get the current student's ID
+
+        # Check if the email exists for another student
+        if Student.objects.filter(email=email).exclude(pk=student_id).exists():
             raise forms.ValidationError("A student with this email already exists.")
-        else: 
-            if not email or "@" not in email:
-                raise forms.ValidationError("Please enter a valid email address.")
         
+        if not email or "@" not in email:
+            raise forms.ValidationError("Please enter a valid email address.")
+
         return email
+
 
     def clean_grade(self): #extra level of validation for grades
         grade = self.cleaned_data.get('grade')
