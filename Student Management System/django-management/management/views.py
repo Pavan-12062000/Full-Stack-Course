@@ -7,15 +7,36 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db.models import Q  # Import Q for complex queries
+from django.core.paginator import Paginator
 
 
 def student_list(request):
     query = request.GET.get('q')  # Get the search query from the request
+    records_per_page = request.GET.get('records_per_page', 10)  # Get the number of records per page from the request, default is 10
+
+    # Ensure `records_per_page` is an integer
+    try:
+        records_per_page = int(records_per_page)
+    except ValueError:
+        records_per_page = 10
+
     if query:
         students = Student.objects.filter(Q(first_name__icontains=query) | Q(last_name__icontains=query))
     else:
         students = Student.objects.all()
-    return render(request, 'management/student_list.html', {'students': students, 'query': query})
+
+    paginator = Paginator(students, records_per_page)  # Paginate based on the selected number of records per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    records_per_page_options = [1, 5, 10, 15, 20, 25]
+
+    return render(request, 'management/student_list.html', {
+        'page_obj': page_obj,
+        'query': query,
+        'records_per_page': records_per_page,
+        'records_per_page_options': records_per_page_options,
+    })
 
 # Display the details of a single student
 def student_detail(request, pk):

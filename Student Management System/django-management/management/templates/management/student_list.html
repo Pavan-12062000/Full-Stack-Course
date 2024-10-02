@@ -14,13 +14,43 @@
     </form>
 
     <ul class="list-group">
-        {% for student in students %}
+        {% for student in page_obj %}
             <li class="list-group-item student-item d-flex justify-content-between align-items-center">
                 <a href="{% url 'student_detail' student.pk %}" class="student-link">{{ student.first_name }} {{ student.last_name }}</a>
                 <span class="badge bg-secondary">Enrolled: {{ student.enrollment_date }}</span>
             </li>
         {% endfor %}
     </ul>
+
+    <form method="get" action="{% url 'student_list' %}" class="mb-4">
+        <div class="form-group">
+            <label for="records_per_page">Records per page:</label>
+            <select name="records_per_page" id="records_per_page" class="form-control" onchange="this.form.submit()">
+                {% for option in records_per_page_options %}
+                    <option value="{{ option }}" {% if records_per_page == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="q" value="{{ query|default:'' }}">
+        </div>
+    </form>
+
+    <div class="pagination mt-4">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&page=1">&laquo; first</a>
+                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&page={{ page_obj.next_page_number }}">next</a>
+                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
 </div>
 
 <style>
@@ -31,10 +61,12 @@
     .student-item {
         transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
         border-radius: 0.5rem;
+        background: linear-gradient(145deg, #f0f0f0, #cacaca);
+        box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
     }
 
     .student-item:hover {
-        transform: scale(1.02);
+        transform: scale(1.05);
         background-color: #f8f9fa;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
@@ -58,6 +90,49 @@
             opacity: 1;
             transform: translateY(0);
         }
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .pagination .step-links a {
+        margin: 0 5px;
+        text-decoration: none;
+        color: #007bff;
+        transition: color 0.3s, transform 0.3s;
+    }
+
+    .pagination .step-links a:hover {
+        color: #0056b3;
+        transform: scale(1.1);
+    }
+
+    .pagination .current {
+        margin: 0 10px;
+        font-weight: bold;
+    }
+
+    .input-group-append .btn-outline-secondary {
+        background: linear-gradient(145deg, #f0f0f0, #cacaca);
+        box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
+        transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .input-group-append .btn-outline-secondary:hover {
+        background: #e0e0e0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-control {
+        border-radius: 0.5rem;
+        transition: box-shadow 0.3s;
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
     }
 </style>
 {% endblock %}
