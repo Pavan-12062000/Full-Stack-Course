@@ -4,11 +4,20 @@
 <div class="container student-list mt-5">
     <h1 class="text-center mb-4">Student List</h1>
 
+    <form method="get" action="{% url 'student_list' %}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Search by name..." aria-label="Search by name" value="{{ query|default:'' }}">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+
     <ul class="list-group">
         {% for student in students %}
             <li class="list-group-item student-item d-flex justify-content-between align-items-center">
                 <a href="{% url 'student_detail' student.pk %}" class="student-link">{{ student.first_name }} {{ student.last_name }}</a>
-                <span class="badge badge-secondary">Enrolled: {{ student.enrollment_date }}</span>
+                <span class="badge bg-secondary">Enrolled: {{ student.enrollment_date }}</span>
             </li>
         {% endfor %}
     </ul>
@@ -20,12 +29,14 @@
     }
 
     .student-item {
-        transition: transform 0.3s, background-color 0.3s;
+        transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+        border-radius: 0.5rem;
     }
 
     .student-item:hover {
         transform: scale(1.02);
         background-color: #f8f9fa;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     .student-link {
@@ -41,9 +52,11 @@
     @keyframes fadeIn {
         from {
             opacity: 0;
+            transform: translateY(-10px);
         }
         to {
             opacity: 1;
+            transform: translateY(0);
         }
     }
 </style>

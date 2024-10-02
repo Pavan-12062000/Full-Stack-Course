@@ -6,12 +6,16 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.db.models import Q  # Import Q for complex queries
 
 
-# Display a list of all students
 def student_list(request):
-    students = Student.objects.all()
-    return render(request, 'management/student_list.html', {'students': students})
+    query = request.GET.get('q')  # Get the search query from the request
+    if query:
+        students = Student.objects.filter(Q(first_name__icontains=query) | Q(last_name__icontains=query))
+    else:
+        students = Student.objects.all()
+    return render(request, 'management/student_list.html', {'students': students, 'query': query})
 
 # Display the details of a single student
 def student_detail(request, pk):
