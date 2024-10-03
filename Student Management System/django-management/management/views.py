@@ -51,36 +51,44 @@ def student_detail(request, pk):
 
 
 # Add a new student
-@login_required
+# @login_required
 def student_create(request):
-    if request.method == "POST":
-        form = StudentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Student has been created successfully!')
-            return redirect('student_list')
-        else:
-            messages.error(request, 'There was an error creating the student. Please correct the form below.')
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please login to add a new student.')
+        return redirect('login')
     else:
-        form = StudentForm()
-    return render(request, 'management/student_form.html', {'form': form})
+        if request.method == "POST":
+            form = StudentForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Student has been created successfully!')
+                return redirect('student_list')
+            else:
+                messages.error(request, 'There was an error creating the student. Please correct the form below.')
+        else:
+            form = StudentForm()
+        return render(request, 'management/student_form.html', {'form': form})
 
 
 # Edit an existing student's information
-@login_required
+# @login_required
 def student_edit(request, pk):
-    student = get_object_or_404(Student, pk=pk)
-    if request.method == "POST":
-        form = StudentForm(request.POST, instance=student)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Student information has been updated successfully!')
-            return redirect('student_detail', pk=student.pk)
-        else:
-            messages.error(request, 'There was an error updating the student. Please correct the form below.')
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please login to edit an existing student.')
+        return redirect('login')
     else:
-        form = StudentForm(instance=student)
-    return render(request, 'management/student_form.html', {'form': form})
+        student = get_object_or_404(Student, pk=pk)
+        if request.method == "POST":
+            form = StudentForm(request.POST, instance=student)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Student information has been updated successfully!')
+                return redirect('student_detail', pk=student.pk)
+            else:
+                messages.error(request, 'There was an error updating the student. Please correct the form below.')
+        else:
+            form = StudentForm(instance=student)
+        return render(request, 'management/student_form.html', {'form': form})
 
 
 # Delete an existing student
