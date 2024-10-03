@@ -8,8 +8,11 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db.models import Q  # Import Q for complex queries
 from django.core.paginator import Paginator
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 
+# Display a list of all students
 def student_list(request):
     query = request.GET.get('q')  # Get the search query from the request
     records_per_page = request.GET.get('records_per_page', 10)  # Get the number of records per page from the request, default is 10
@@ -17,6 +20,8 @@ def student_list(request):
     # Ensure `records_per_page` is an integer
     try:
         records_per_page = int(records_per_page)
+        if records_per_page not in [1, 5, 10, 15, 20, 25]:
+            records_per_page = 10  # Set to default if not in valid options
     except ValueError:
         records_per_page = 10
 
@@ -38,11 +43,12 @@ def student_list(request):
         'records_per_page_options': records_per_page_options,
     })
 
+
 # Display the details of a single student
 def student_detail(request, pk):
-    print(f"Fetching details for student with pk: {pk}")
     student = get_object_or_404(Student, pk=pk)
     return render(request, 'management/student_detail.html', {'student': student})
+
 
 # Add a new student
 @login_required
@@ -58,6 +64,7 @@ def student_create(request):
     else:
         form = StudentForm()
     return render(request, 'management/student_form.html', {'form': form})
+
 
 # Edit an existing student's information
 @login_required
@@ -75,6 +82,7 @@ def student_edit(request, pk):
         form = StudentForm(instance=student)
     return render(request, 'management/student_form.html', {'form': form})
 
+
 # Delete an existing student
 @login_required
 def student_delete(request, pk):
@@ -85,6 +93,8 @@ def student_delete(request, pk):
         return redirect('student_list')  # Redirect to the student list after deletion
     return render(request, 'management/student_detail.html', {'student': student})
 
+
+# Register a new user
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -96,10 +106,11 @@ def register(request):
             messages.error(request, 'There was an error creating your account. Please correct the form below.')
     else:
         form = UserCreationForm()
-    
+
     return render(request, 'registration/register.html', {'form': form})
 
 
+# User login view
 def user_login(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
@@ -117,9 +128,11 @@ def user_login(request):
             messages.error(request, 'Invalid username or password. Please try again.')
     else:
         form = AuthenticationForm()
-    
+
     return render(request, 'registration/login.html', {'form': form})
 
+
+# Forgot password view
 def forgot_password(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -138,9 +151,12 @@ def forgot_password(request):
             messages.error(request, 'Passwords do not match.')
             return redirect('forgot_password')
 
-        # Here you can add more password validations as per your requirements
-        if len(new_password) < 8:
-            messages.error(request, 'New password must be at least 8 characters long.')
+        # Use Django's built-in password validation
+        try:
+            validate_password(new_password, user)
+        except ValidationError as e:
+            for error in e:
+                messages.error(request, error)
             return redirect('forgot_password')
 
         # Set the new password and save
@@ -148,8 +164,10 @@ def forgot_password(request):
         user.save()
         messages.success(request, 'Your password has been successfully updated! Please log in with your new password.')
         return redirect('login')  # Redirect to the login page after successful password update
+        
     return render(request, 'registration/forgot_password.html')
 
+# User logout view
 def user_logout(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully!')
