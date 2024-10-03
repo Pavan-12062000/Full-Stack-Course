@@ -92,14 +92,18 @@ def student_edit(request, pk):
 
 
 # Delete an existing student
-@login_required
+# @login_required
 def student_delete(request, pk):
-    student = get_object_or_404(Student, pk=pk)
-    if request.method == "POST":
-        student.delete()
-        messages.success(request, 'Student has been deleted successfully!')
-        return redirect('student_list')  # Redirect to the student list after deletion
-    return render(request, 'management/student_detail.html', {'student': student})
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please login to delete an existing student.')
+        return redirect('login')
+    else:
+        student = get_object_or_404(Student, pk=pk)
+        if request.method == "POST":
+            student.delete()
+            messages.success(request, 'Student has been deleted successfully!')
+            return redirect('student_list')  # Redirect to the student list after deletion
+        return render(request, 'management/student_detail.html', {'student': student})
 
 
 # Register a new user
