@@ -4,6 +4,32 @@
 <div class="container student-list mt-5">
     <h1 class="text-center mb-4">Student List</h1>
 
+    <!-- Year Selection Dropdown -->
+    <form method="get" action="{% url 'student_list' %}" class="mb-4">
+        <div class="form-group">
+            <label for="year_selection">Select Year:</label>
+            <select name="selected_year" id="year_selection" class="form-control" onchange="this.form.submit()">
+                <option value="" {% if not selected_year %}selected{% endif %}>All Years</option>
+                {% for year in available_years %}
+                    <option value="{{ year.year }}" {% if selected_year == year.year %}selected{% endif %}>{{ year.year }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <!-- Data Analytics Section -->
+    <div class="data-analytics mb-4">
+        <h3 class="text-center">Student Enrollment Analytics</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="enrollmentPieChart"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="enrollmentLineGraph"></canvas>
+            </div>
+        </div>
+    </div>
+
     <form method="get" action="{% url 'student_list' %}" class="mb-4">
         <div class="input-group">
             <input type="text" name="q" class="form-control" placeholder="Search by name..." aria-label="Search by name" value="{{ query|default:'' }}">
@@ -31,14 +57,15 @@
                 {% endfor %}
             </select>
             <input type="hidden" name="q" value="{{ query|default:'' }}">
+            <input type="hidden" name="selected_year" value="{{ selected_year|default:'' }}">
         </div>
     </form>
 
     <div class="pagination mt-4">
         <span class="step-links">
             {% if page_obj.has_previous %}
-                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&page=1">&laquo; first</a>
-                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&page={{ page_obj.previous_page_number }}">previous</a>
+                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&selected_year={{ selected_year }}&page=1">&laquo; first</a>
+                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&selected_year={{ selected_year }}&page={{ page_obj.previous_page_number }}">previous</a>
             {% endif %}
 
             <span class="current">
@@ -46,12 +73,60 @@
             </span>
 
             {% if page_obj.has_next %}
-                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&page={{ page_obj.next_page_number }}">next</a>
-                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&selected_year={{ selected_year }}&page={{ page_obj.next_page_number }}">next</a>
+                <a href="?q={{ query }}&records_per_page={{ records_per_page }}&selected_year={{ selected_year }}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
             {% endif %}
         </span>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Add JSON data as script to pass Python data to JavaScript
+    const studentEnrollmentData = JSON.parse('{{ enrollment_data|safe }}');
+
+    // Pie Chart for Enrollment Analytics
+    const ctxPie = document.getElementById('enrollmentPieChart').getContext('2d');
+    const enrollmentPieChart = new Chart(ctxPie, {
+        type: 'pie',
+        data: {
+            labels: ['January-April', 'May-August', 'September-December'],
+            datasets: [{
+                data: studentEnrollmentData.pieChartData,
+                backgroundColor: ['#ff6384', '#36a2eb', '#ffce56'],
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+        }
+    });
+
+    // Line Graph for Enrollment Trend
+    const ctxLine = document.getElementById('enrollmentLineGraph').getContext('2d');
+    const enrollmentLineGraph = new Chart(ctxLine, {
+        type: 'line',
+        data: {
+            labels: studentEnrollmentData.graphLabels,
+            datasets: [{
+                label: 'Student Enrollments',
+                data: studentEnrollmentData.graphData,
+                borderColor: '#36a2eb',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
 
 <style>
     .student-list {
@@ -133,6 +208,15 @@
 
     .form-control:focus {
         box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    }
+
+    .data-analytics {
+        margin-bottom: 3rem;
+    }
+
+    .data-analytics canvas {
+        width: 100%;
+        height: 400px;
     }
 </style>
 {% endblock %}

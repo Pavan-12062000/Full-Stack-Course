@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Student
 from .forms import StudentForm  
@@ -10,39 +11,81 @@ from django.db.models import Q  # Import Q for complex queries
 from django.core.paginator import Paginator
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from datetime import datetime
 
 
 # Display a list of all students
 def student_list(request):
-    query = request.GET.get('q')  # Get the search query from the request
-    records_per_page = request.GET.get('records_per_page', 10)  # Get the number of records per page from the request, default is 10
+    # Get the search query from the request
+    query = request.GET.get('q', '')
 
-    # Ensure `records_per_page` is an integer
+    # Get the selected year from the dropdown, default is the current year
+    selected_year = request.GET.get('selected_year', '')
+
+    # Get the number of records per page from the request, default is 10
     try:
-        records_per_page = int(records_per_page)
+        records_per_page = int(request.GET.get('records_per_page', 10))
+        # Ensure records_per_page is in the allowed options
         if records_per_page not in [1, 5, 10, 15, 20, 25]:
-            records_per_page = 10  # Set to default if not in valid options
+            records_per_page = 10
     except ValueError:
         records_per_page = 10
 
-    if query:
-        students = Student.objects.filter(Q(first_name__icontains=query) | Q(last_name__icontains=query))
-    else:
-        students = Student.objects.all()
+    # Filter students based on search query
+    students = Student.objects.filter(
+        Q(first_name__icontains=query) | Q(last_name__icontains=query)
+    ) if query else Student.objects.all()
 
-    paginator = Paginator(students, records_per_page)  # Paginate based on the selected number of records per page
+        # Filter students based on selected year
+    if selected_year:
+        try:
+            selected_year = int(selected_year)  # Convert to int only if it's not empty
+            students_for_year = students.filter(enrollment_date__year=selected_year)
+        except ValueError:
+            students_for_year = students  # If there's an error in conversion, show all
+    else:
+        students_for_year = students  # Show all students if "All Years" is selected
+
+    # Paginate the students queryset
+    paginator = Paginator(students_for_year, records_per_page)  # Paginate based on the filtered list
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    records_per_page_options = [1, 5, 10, 15, 20, 25]
+    # Get available years for dropdown
+    available_years = Student.objects.dates('enrollment_date', 'year').distinct()
 
+    # Filter data analytics based on the selected year
+    jan_apr_count = students_for_year.filter(enrollment_date__month__in=[1, 2, 3, 4]).count()
+    may_aug_count = students_for_year.filter(enrollment_date__month__in=[5, 6, 7, 8]).count()
+    sep_dec_count = students_for_year.filter(enrollment_date__month__in=[9, 10, 11, 12]).count()
+
+    # Graph data: Enrollment trend over months for the selected year
+    graph_labels = [
+        'January', 'February', 'March', 'April', 'May', 'June', 
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+    graph_data = [
+        students_for_year.filter(enrollment_date__month=month).count()
+        for month in range(1, 13)
+    ]
+
+    # Prepare JSON data for JavaScript
+    enrollment_data = json.dumps({
+        'pieChartData': [jan_apr_count, may_aug_count, sep_dec_count],
+        'graphLabels': graph_labels,
+        'graphData': graph_data
+    })
+
+    # Render the student list template
     return render(request, 'management/student_list.html', {
         'page_obj': page_obj,
         'query': query,
         'records_per_page': records_per_page,
-        'records_per_page_options': records_per_page_options,
+        'records_per_page_options': [1, 5, 10, 15, 20, 25],
+        'available_years': available_years,
+        'selected_year': selected_year,
+        'enrollment_data': enrollment_data,
     })
-
 
 # Display the details of a single student
 def student_detail(request, pk):
